@@ -12,6 +12,7 @@ namespace WordStats
         static void Main(string[] args)
         {
             Dictionary<string, int> words = new Dictionary<string, int>();
+            string filename;
             
             if (args.Length < 1)
             {
@@ -24,12 +25,40 @@ namespace WordStats
             else
             {
                 words=ReadWords(args[0]);
+                filename = Path.GetFileNameWithoutExtension(args[0]);
                 int sum = 0;
                 foreach (var word in words) sum += word.Value;
                 Dictionary<string,int> top10 = Top10Lengths(words);
                 int avgrLength=AvgrLength(words);
                 int numowordless3 = WordsShorter3(words);
                 int numowordmore3 = Words3orLonger(words);
+                List<string> towritelist = new List<string>();
+                foreach (var word in words) 
+                {
+                    towritelist.Add($"{word.Key}  {word.Value}");
+                }
+                String[] towrite = towritelist.ToArray();
+                if (!File.Exists($"{filename}.besede.txt"))
+                {
+                    File.WriteAllLines($"{filename}.besede.txt", towrite);
+                }
+                else 
+                {
+                    Console.WriteLine($"Datoteka {filename}.besede.txt že obstaja želite prepisati to datoteko (y/n)");
+                    char ans = (char)Console.Read();
+                    if (ans == 'y')
+                    {
+                        File.WriteAllLines($"{filename}.besede.txt", towrite);
+                    }
+                    else if (ans == 'n')
+                    {
+                        Console.WriteLine("Izpis statistike brez shranjevanja seznama besed");
+                    }
+                    else 
+                    {
+                        Console.WriteLine("Something went wrong");
+                    }
+                }
                 Console.WriteLine($"Skupno število besed: {sum}");
                 Console.WriteLine($"Število unikatnih besed: {words.Count}");
                 Console.WriteLine($"10 najpogostejših besed: ");
