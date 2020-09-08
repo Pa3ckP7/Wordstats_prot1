@@ -12,6 +12,7 @@ namespace WordStats
         static void Main(string[] args)
         {
             Dictionary<string, int> words = new Dictionary<string, int>();
+            
             if (args.Length < 1)
             {
                 Console.WriteLine("Program je namenjen uporabi znotraj ukazne vrstice.");
@@ -25,9 +26,16 @@ namespace WordStats
                 words=ReadWords(args[0]);
                 int sum = 0;
                 foreach (var word in words) sum += word.Value;
+                Dictionary<string,int> top10 = Top10Lengths(words);
                 Console.WriteLine($"Skupno število besed: {sum}");
                 Console.WriteLine($"Število unikatnih besed: {words.Count}");
-                Console.WriteLine($"10 najpogostejših besed: WIP");
+                Console.WriteLine($"10 najpogostejših besed: ");
+                int placement=0;
+                foreach (var word in top10) 
+                {
+                    placement++;
+                    Console.WriteLine($"{placement}.  {word.Key} || {word.Value}");
+                }
                 Console.WriteLine($"Povprečna dolžina besede: WIP");
                 Console.WriteLine($"Število kratkih besed (manj kot 3 znaki): WIP");
                 Console.WriteLine($"Število dolgih besed (več kot 3 znaki): WIP");
@@ -64,6 +72,42 @@ namespace WordStats
                 }
             }
             return words;
+        }
+        static Dictionary<string,int> Top10Lengths(Dictionary<string,int> source) 
+        {
+            List<string> top10 = new List<string>();
+            Dictionary<string, int> result = new Dictionary<string, int>();
+            foreach (var word in source) 
+            {
+                if (top10.Count < 10)
+                {
+                    top10.Add(word.Key);
+                }
+                else 
+                {
+                    for (int i = 0; i < top10.Count; i++) 
+                    {
+                        int valueToCompare;
+                        source.TryGetValue(top10[i], out valueToCompare);
+                        if (word.Value > valueToCompare)
+                        {
+                            top10.Insert(i, word.Key);
+                            break;
+                        }
+                    }
+                    if (top10.Count > 10) 
+                    {
+                        top10.RemoveAt(top10.Count - 1);
+                    }
+                }
+            }
+            foreach(string word in top10)
+            {
+                int valueToAdd;
+                source.TryGetValue(word, out valueToAdd);
+                result.Add(word, valueToAdd);
+            }
+            return result;
         }
     }
 }
