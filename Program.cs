@@ -11,6 +11,7 @@ namespace WordStats
     {
         static void Main(string[] args)
         {
+            Dictionary<string, int> words = new Dictionary<string, int>();
             if (args.Length < 1)
             {
                 Console.WriteLine("Program je namenjen uporabi znotraj ukazne vrstice.");
@@ -21,16 +22,24 @@ namespace WordStats
             }
             else
             {
-                ReadWords(args[0]);
+                words=ReadWords(args[0]);
+                int sum = 0;
+                foreach (var word in words) sum += word.Value;
+                Console.WriteLine($"Skupno število besed: {sum}");
+                Console.WriteLine($"Število unikatnih besed: {words.Count}");
+                Console.WriteLine($"10 najpogostejših besed: WIP");
+                Console.WriteLine($"Povprečna dolžina besede: WIP");
+                Console.WriteLine($"Število kratkih besed (manj kot 3 znaki): WIP");
+                Console.WriteLine($"Število dolgih besed (več kot 3 znaki): WIP");
             }
         }
-        static string[] ReadWords(string location)
+        static Dictionary<string,int> ReadWords(string location)
         {
             string[] lines = File.ReadAllLines(location);
-            List<string> words = new List<string>();
+            Dictionary<string,int> words = new Dictionary<string, int>();
             for (int i = 0; i < lines.Length; i++)
             {
-                lines[i]=lines[i].ToLower();
+                lines[i] = lines[i].ToLower();
                 lines[i] = lines[i].Replace(",","");
                 lines[i] = lines[i].Replace(".", "");
                 lines[i] = lines[i].Replace("!", "");
@@ -40,22 +49,21 @@ namespace WordStats
                 lines[i] = lines[i].Replace("\"", "");
                 lines[i] = lines[i].Replace("-", "");
                 lines[i] = lines[i].Replace(";", "");
-                string[] wordsa = lines[i].Split(' ');
-                foreach (string worda in wordsa) 
+                string[] temp = lines[i].Split(' ');
+                foreach (string str in temp)
                 {
-                    words.Add(worda);
-                }
-                for (int x=0;x< words.Count(); x++)
-                {
-                    if(words[x].All(char.IsDigit)) 
+                    if (str.All(char.IsDigit)) continue;
+                    if (words.ContainsKey(str))
                     {
-                        words.RemoveAt(x);
-                        
+                        words[str]++;
+                    }
+                    else
+                    {
+                        words.Add(str, 1);
                     }
                 }
             }
-            Array.ForEach(words.ToArray(), Console.WriteLine);
-            return null;
+            return words;
         }
     }
 }
