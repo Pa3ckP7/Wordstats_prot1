@@ -27,6 +27,9 @@ namespace WordStats
                 int sum = 0;
                 foreach (var word in words) sum += word.Value;
                 Dictionary<string,int> top10 = Top10Lengths(words);
+                int avgrLength=AvgrLength(words);
+                int numowordless3 = WordsShorter3(words);
+                int numowordmore3 = Words3orLonger(words);
                 Console.WriteLine($"Skupno število besed: {sum}");
                 Console.WriteLine($"Število unikatnih besed: {words.Count}");
                 Console.WriteLine($"10 najpogostejših besed: ");
@@ -34,11 +37,11 @@ namespace WordStats
                 foreach (var word in top10) 
                 {
                     placement++;
-                    Console.WriteLine($"{placement}.  {word.Key} || {word.Value}");
+                    Console.WriteLine(String.Format("{0,3}.{1,15}|{2,5}",placement,word.Key,word.Value));
                 }
-                Console.WriteLine($"Povprečna dolžina besede: WIP");
-                Console.WriteLine($"Število kratkih besed (manj kot 3 znaki): WIP");
-                Console.WriteLine($"Število dolgih besed (več kot 3 znaki): WIP");
+                Console.WriteLine($"Povprečna dolžina besede: {avgrLength}");
+                Console.WriteLine($"Število kratkih besed (manj kot 3 znaki): {numowordless3}");
+                Console.WriteLine($"Število dolgih besed (več kot 3 znaki): {numowordmore3}");
             }
         }
         static Dictionary<string,int> ReadWords(string location)
@@ -108,6 +111,39 @@ namespace WordStats
                 result.Add(word, valueToAdd);
             }
             return result;
+        }
+        static int AvgrLength(Dictionary<string, int> source) 
+        {
+            List<int> words = new List<int>();
+            foreach (var src in source) 
+            {
+                words.Add(src.Key.Length);
+            }
+            return (int)words.Average();
+        }
+        static int WordsShorter3(Dictionary<string, int> source)
+        {
+            List<string> words = new List<string>();
+            foreach (var src in source)
+            {
+                if (src.Key.Length < 3)
+                {
+                    words.Add(src.Key);
+                }
+            }
+            return words.Count;
+        }
+        static int Words3orLonger(Dictionary<string, int> source)
+        {
+            List<string> words = new List<string>();
+            foreach (var src in source)
+            {
+                if (src.Key.Length >= 3)
+                {
+                    words.Add(src.Key);
+                }
+            }
+            return words.Count;
         }
     }
 }
