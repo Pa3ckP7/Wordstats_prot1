@@ -79,15 +79,17 @@ namespace WordStats
             {
                 words = ReadWords(args[0]);
                 stopwords = File.ReadAllLines(args[1]);
-                words_filtered = Filter(words);
+                words_filtered = Filter(words,stopwords);
                 filename = Path.GetFileNameWithoutExtension(args[0]);
                 int sum = 0;
+                int sumf = 0;
                 foreach (var word in words) sum += word.Value;
-                Dictionary<string, int> top10 = Sort(words, 10);
-                Dictionary<string, int> words_sorted = Sort(words, words.Count);
-                int avgrLength = AvgrLength(words);
-                int numowordless3 = WordsShorter3(words);
-                int numowordmore3 = Words3orLonger(words);
+                foreach (var word in words_filtered) sumf += word.Value;
+                Dictionary<string, int> top10 = Sort(words_filtered, 10);
+                Dictionary<string, int> words_sorted = Sort(words_filtered, words_filtered.Count);
+                int avgrLength = AvgrLength(words_filtered);
+                int numowordless3 = WordsShorter3(words_filtered);
+                int numowordmore3 = Words3orLonger(words_filtered);
                 List<string> towritelist = new List<string>();
                 foreach (var word in words_sorted)
                 {
@@ -116,7 +118,10 @@ namespace WordStats
                     }
                 }
                 Console.WriteLine($"Skupno število besed: {sum}");
+                Console.WriteLine($"Skupno število besed po filtriranju: {sumf}");
+                Console.WriteLine($"Skupno število filtriranih besed: {sum-sumf}");
                 Console.WriteLine($"Število unikatnih besed: {words.Count}");
+                Console.WriteLine($"Število unikatnih besed filtriranih: {words.Count-words_filtered.Count}");
                 Console.WriteLine($"10 najpogostejših besed: ");
                 int placement = 0;
                 foreach (var word in top10)
@@ -242,9 +247,18 @@ namespace WordStats
             }
             return words.Count;
         }
-        static Dictionary<string, int> Filter(Dictionary<string, int> source, int size) 
+        static Dictionary<string, int> Filter(Dictionary<string, int> unfiltered, string[] filter) 
         {
-            return null;
+            Dictionary<string, int> wordsunfiltered= new Dictionary<string, int>();
+            foreach (var word in unfiltered) wordsunfiltered.Add(word.Key, word.Value);
+            for (int i = 0; i < filter.Length; i++) 
+            {
+                if (wordsunfiltered.ContainsKey(filter[i])) 
+                {
+                    wordsunfiltered.Remove(filter[i]);
+                }
+            }
+            return wordsunfiltered;
         }
     }
 }
