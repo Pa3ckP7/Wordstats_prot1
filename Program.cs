@@ -136,7 +136,7 @@ namespace WordStats
         }
         static Dictionary<string,int> ReadWords(string location)
         {
-            var locila = new[] { ',', '?', '.', '!', ' ','(',')','"',';','-',':','+','€','•','\t'};
+            var locila = new[] { ',', '?', '.', '!', ' ','(',')','"',';','-',':','+','€','•','\t','»','=','*'};
             string[] lines = File.ReadAllLines(location);
             Dictionary<string,int> words = new Dictionary<string, int>();
             for (int i = 0; i < lines.Length; i++)
