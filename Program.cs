@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace WordStats
 {
@@ -11,8 +12,8 @@ namespace WordStats
     {
         static void Main(string[] args)
         {
-            Dictionary<string, int> words = new Dictionary<string, int>();
-            Dictionary<string, int> words_filtered = new Dictionary<string, int>();
+            Dictionary<string, int> words;
+            Dictionary<string, int> words_filtered;
             string filename;
             string[] stopwords;
 
@@ -80,6 +81,7 @@ namespace WordStats
                 words = ReadWords(args[0]);
                 stopwords = File.ReadAllLines(args[1]);
                 words_filtered = Filter(words,stopwords);
+                Morf morfer = new Morf("morfologija.txt", words_filtered);
                 filename = Path.GetFileNameWithoutExtension(args[0]);
                 int sum = 0;
                 int sumf = 0;
@@ -117,6 +119,39 @@ namespace WordStats
                         Console.WriteLine("Something went wrong");
                     }
                 }
+                if (!File.Exists($"{filename}.stems.txt"))
+                {
+                    using (StreamWriter file = new StreamWriter($"{filename}.stems.txt")) 
+                    {
+                        foreach (var word in words_filtered) 
+                        {
+                            file.WriteLine(morfer.Stemify(word.Key));
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Datoteka {filename}.stems.txt že obstaja želite prepisati to datoteko (y/n) (privzeto y)");
+                    char ans = (char)Console.Read();
+                    if (ans == 'y' || ans == '\r')
+                    {
+                        using (StreamWriter file = new StreamWriter($"{filename}.stems.txt"))
+                        {
+                            foreach (var word in words_filtered)
+                            {
+                                file.WriteLine(morfer.Stemify(word.Key));
+                            }
+                        }
+                    }
+                    else if (ans == 'n')
+                    {
+                        Console.WriteLine("Izpis statistike brez shranjevanja novega teksta");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Something went wrong");
+                    }
+                }
                 Console.WriteLine($"Skupno število besed: {sum}");
                 Console.WriteLine($"Skupno število besed po filtriranju: {sumf}");
                 Console.WriteLine($"Skupno število filtriranih besed: {sum-sumf}");
@@ -136,23 +171,25 @@ namespace WordStats
         }
         static Dictionary<string,int> ReadWords(string location)
         {
-            var locila = new[] { ',', '?', '.', '!', ' ','(',')','"',';','-',':','+','€','•','\t','»','=','*'};
-            string[] lines = File.ReadAllLines(location);
-            Dictionary<string,int> words = new Dictionary<string, int>();
-            for (int i = 0; i < lines.Length; i++)
+            Dictionary<string, int> words = new Dictionary<string, int>();
+            using (var frws = File.OpenRead(location))
+            using (var srws = new StreamReader(frws)) 
             {
-                lines[i] = lines[i].ToLower();
-                string[] temp = lines[i].Split(locila, StringSplitOptions.RemoveEmptyEntries);
-                foreach (string str in temp)
+                while (!srws.EndOfStream) 
                 {
-                    if (str.All(char.IsDigit)) continue;
-                    if (words.ContainsKey(str))
+                    string line = srws.ReadLine().ToLower();
+                    string[] wordstoadd=Regex.Replace(line, "[.,;:!?()\"+€•\t»=*]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (string word in wordstoadd) 
                     {
-                        words[str]++;
-                    }
-                    else
-                    {
-                        words.Add(str, 1);
+                        if (word.All(char.IsDigit)) continue;
+                        if (words.ContainsKey(word))
+                        {
+                            words[word]++;
+                        }
+                        else
+                        {
+                            words.Add(word, 1);
+                        }
                     }
                 }
             }
