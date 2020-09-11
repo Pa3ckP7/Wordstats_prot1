@@ -71,22 +71,23 @@ namespace WordStats
         }
         public string Stemify(string line)
         {
-            var entries = Regex.Replace(line, "[.,;:!?()]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            string toreturn="";
+            var entries = Regex.Replace(line, "[^a-zA-Z čšžČŠŽ]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var entry in entries)
             {
                 if (Stopwordsmorf.Contains(entry)) continue;
                 if (Stems.TryGetValue(entry, out var r))
                 {
                     if (Stopwordsmorf.Contains(r)) continue;
-                    return r+ " ";
+                    toreturn+=r;
                 }
                 else
                 {
-                    return entry+" ";
+                    toreturn+=entry;
                 }
+                toreturn += " ";
             }
-            return "\n";
+            return toreturn;
         }
-
     }
 }

@@ -14,6 +14,7 @@ namespace WordStats
         {
             Dictionary<string, int> words;
             Dictionary<string, int> words_filtered;
+            Dictionary<string, int> words_morfed = new Dictionary<string, int>();
             string filename;
             string[] stopwords;
 
@@ -83,6 +84,19 @@ namespace WordStats
                 stopwords = File.ReadAllLines(args[1]);
                 words_filtered = Filter(words,stopwords);
                 Morf morfer = new Morf(words_filtered);
+                foreach (var word in words_filtered)
+                {
+                    KeyValuePair<string, int> morfed = morfer.Stemify(word);
+                    if (!words_morfed.ContainsKey(morfed.Key))
+                    {
+                        words_morfed.Add(morfed.Key, morfed.Value);
+                    }
+                    else 
+                    {
+                        words_morfed[morfed.Key] += morfed.Value;
+                    }
+                    
+                }
                 int sum = 0;
                 int sumf = 0;
                 foreach (var word in words) sum += word.Value;
@@ -123,10 +137,9 @@ namespace WordStats
                 {
                     using (StreamWriter file = new StreamWriter($"{filename}.stems.txt")) 
                     {
-                        foreach (var word in words_filtered) 
+                        foreach (var word in words_morfed) 
                         {
-                            KeyValuePair<string, int> towritepair = (morfer.Stemify(word)); 
-                            file.WriteLine($"{towritepair.Key}  {towritepair.Value}");
+                            file.WriteLine($"{word.Key}  {word.Value}");
                         }
                     }
                 }
@@ -179,7 +192,7 @@ namespace WordStats
                 while (!srws.EndOfStream) 
                 {
                     string line = srws.ReadLine().ToLower();
-                    string[] wordstoadd=Regex.Replace(line, "[.,;:!?()\"+€•\t»=*]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] wordstoadd=Regex.Replace(line, "[^a-zA-Z čšžČŠŽ]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (string word in wordstoadd) 
                     {
                         if (word.All(char.IsDigit)) continue;
@@ -212,7 +225,7 @@ namespace WordStats
                             string line = srws.ReadLine().ToLower();
                             string line_morfed = morfer.Stemify(line);
                             file.WriteLine(line_morfed);                            
-                            string[] wordstoadd = Regex.Replace(line, "[.,;:!?()\"+€•\t»=*]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            string[] wordstoadd = Regex.Replace(line, "[^a-zA-Z čšžČŠŽ]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string word in wordstoadd)
                             {
                                 if (word.All(char.IsDigit)) continue;
@@ -241,7 +254,7 @@ namespace WordStats
                                 string line = srws.ReadLine().ToLower();
                                 string line_morfed = morfer.Stemify(line);
                                 file.WriteLine(line_morfed);
-                                string[] wordstoadd = Regex.Replace(line, "[.,;:!?()\"+€•\t»=*]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                                string[] wordstoadd = Regex.Replace(line, "[^a-zA-Z čšžČŠŽ]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                                 foreach (string word in wordstoadd)
                                 {
                                     if (word.All(char.IsDigit)) continue;
@@ -262,7 +275,7 @@ namespace WordStats
                         while (!srws.EndOfStream)
                         {
                             string line = srws.ReadLine().ToLower();
-                            string[] wordstoadd = Regex.Replace(line, "[.,;:!?()\"+€•\t»=*]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            string[] wordstoadd = Regex.Replace(line, "[^a-zA-Z čšžČŠŽ]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                             foreach (string word in wordstoadd)
                             {
                                 if (word.All(char.IsDigit)) continue;
