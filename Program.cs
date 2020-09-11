@@ -78,11 +78,11 @@ namespace WordStats
             }
             else 
             {
-                words = ReadWords(args[0]);
+                filename = Path.GetFileNameWithoutExtension(args[0]);
+                words = ReadWords(args[0],args[1],filename);
                 stopwords = File.ReadAllLines(args[1]);
                 words_filtered = Filter(words,stopwords);
-                Morf morfer = new Morf("morfologija.txt", words_filtered);
-                filename = Path.GetFileNameWithoutExtension(args[0]);
+                Morf morfer = new Morf(words_filtered);
                 int sum = 0;
                 int sumf = 0;
                 foreach (var word in words) sum += word.Value;
@@ -125,7 +125,8 @@ namespace WordStats
                     {
                         foreach (var word in words_filtered) 
                         {
-                            file.WriteLine(morfer.Stemify(word.Key));
+                            KeyValuePair<string, int> towritepair = (morfer.Stemify(word)); 
+                            file.WriteLine($"{towritepair.Key}  {towritepair.Value}");
                         }
                     }
                 }
@@ -139,7 +140,7 @@ namespace WordStats
                         {
                             foreach (var word in words_filtered)
                             {
-                                file.WriteLine(morfer.Stemify(word.Key));
+                                file.WriteLine(morfer.Stemify(word));
                             }
                         }
                     }
@@ -189,6 +190,91 @@ namespace WordStats
                         else
                         {
                             words.Add(word, 1);
+                        }
+                    }
+                }
+            }
+            return words;
+        }
+        static Dictionary<string, int> ReadWords(string location, string stopwords, string filename)
+        {
+            Morf morfer = new Morf(stopwords);
+            Dictionary<string, int> words = new Dictionary<string, int>();
+            using (var frws = File.OpenRead(location))
+            using (var srws = new StreamReader(frws))
+            {
+                if (!File.Exists($"{filename}.stems.txt"))
+                {                    
+                    using (StreamWriter file = new StreamWriter($"{filename}.stems.besedilo.txt"))
+                    {
+                        while (!srws.EndOfStream)
+                        {                          
+                            string line = srws.ReadLine().ToLower();
+                            string line_morfed = morfer.Stemify(line);
+                            file.WriteLine(line_morfed);                            
+                            string[] wordstoadd = Regex.Replace(line, "[.,;:!?()\"+€•\t»=*]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (string word in wordstoadd)
+                            {
+                                if (word.All(char.IsDigit)) continue;
+                                if (words.ContainsKey(word))
+                                {
+                                    words[word]++;
+                                }
+                                else
+                                {
+                                    words.Add(word, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+                else 
+                {
+                    Console.WriteLine($"Datoteka {filename}.stems.txt že obstaja želite prepisati to datoteko (y/n) (privzeto y)");
+                    char ans = (char)Console.Read();
+                    if (ans == 'y' || ans == '\r')
+                    {
+                        using (StreamWriter file = new StreamWriter($"{filename}.stems.besedilo.txt"))
+                        {
+                            while (!srws.EndOfStream)
+                            {
+                                string line = srws.ReadLine().ToLower();
+                                string line_morfed = morfer.Stemify(line);
+                                file.WriteLine(line_morfed);
+                                string[] wordstoadd = Regex.Replace(line, "[.,;:!?()\"+€•\t»=*]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                                foreach (string word in wordstoadd)
+                                {
+                                    if (word.All(char.IsDigit)) continue;
+                                    if (words.ContainsKey(word))
+                                    {
+                                        words[word]++;
+                                    }
+                                    else
+                                    {
+                                        words.Add(word, 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        while (!srws.EndOfStream)
+                        {
+                            string line = srws.ReadLine().ToLower();
+                            string[] wordstoadd = Regex.Replace(line, "[.,;:!?()\"+€•\t»=*]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            foreach (string word in wordstoadd)
+                            {
+                                if (word.All(char.IsDigit)) continue;
+                                if (words.ContainsKey(word))
+                                {
+                                    words[word]++;
+                                }
+                                else
+                                {
+                                    words.Add(word, 1);
+                                }
+                            }
                         }
                     }
                 }

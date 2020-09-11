@@ -3,19 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace WordStats
 {
     public class Morf
     {
-        private Dictionary<string, string> stems = new Dictionary<string, string>();
-        private List<string> words = new List<string>();
-        public Morf(String location, Dictionary<string,int> source) 
+        private Dictionary<string, string> Stems = new Dictionary<string, string>();
+        private List<string> Words = new List<string>();
+        private HashSet<string> Stopwordsmorf = new HashSet<string>();
+        public Morf(Dictionary<string,int> source) 
         {
             foreach (var word in source) 
             {
-                words.Add(word.Key);
+                Words.Add(word.Key);
             }
             using (var fs = File.OpenRead("morfologija.txt"))
             using (var sr = new StreamReader(fs))
@@ -26,21 +28,64 @@ namespace WordStats
                     var arr = l.Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
                     if (!arr[2].StartsWith("K"))
                     {
-                        if (!stems.ContainsKey(arr[0])) stems[arr[0]] = arr[1];
+                        if (!Stems.ContainsKey(arr[0])) Stems[arr[0]] = arr[1];
                     }
                 }
             }
         }
-        public string Stemify(string word) 
+        public Morf(string stopwords)
         {
-            if (stems.TryGetValue(word, out var r))
+            
+            using (var fsSw = File.OpenRead("stopwords.txt"))
+            using (var srSw = new StreamReader(fsSw))
             {
-                return(r);
+                while (!srSw.EndOfStream)
+                {
+                    Stopwordsmorf.Add(srSw.ReadLine());
+                }
+            }
+            using (var fs = File.OpenRead("morfologija.txt"))
+            using (var sr = new StreamReader(fs))
+            {
+                while (!sr.EndOfStream)
+                {
+                    var l = sr.ReadLine();
+                    var arr = l.Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (!arr[2].StartsWith("K"))
+                    {
+                        if (!Stems.ContainsKey(arr[0])) Stems[arr[0]] = arr[1];
+                    }
+                }
+            }
+        }
+        public KeyValuePair<string, int> Stemify(KeyValuePair<string,int> word) 
+        {
+            if (Stems.TryGetValue(word.Key, out var r))
+            {
+                return(new KeyValuePair<string,int>(r,word.Value));
             }
             else
             {
                 return(word);
             }
+        }
+        public string Stemify(string line)
+        {
+            var entries = Regex.Replace(line, "[.,;:!?()]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var entry in entries)
+            {
+                if (Stopwordsmorf.Contains(entry)) continue;
+                if (Stems.TryGetValue(entry, out var r))
+                {
+                    if (Stopwordsmorf.Contains(r)) continue;
+                    return r+ " ";
+                }
+                else
+                {
+                    return entry+" ";
+                }
+            }
+            return "\n";
         }
 
     }
