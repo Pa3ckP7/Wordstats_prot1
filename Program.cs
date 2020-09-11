@@ -103,6 +103,7 @@ namespace WordStats
                 foreach (var word in words_filtered) sumf += word.Value;
                 Dictionary<string, int> top10 = Sort(words_filtered, 10);
                 Dictionary<string, int> words_sorted = Sort(words_filtered, words_filtered.Count);
+                Dictionary<string, int> words_morfed_sorted = Sort(words_morfed, words_morfed.Count);
                 int avgrLength = AvgrLength(words_filtered);
                 int numowordless3 = WordsShorter3(words_filtered);
                 int numowordmore3 = Words3orLonger(words_filtered);
@@ -138,7 +139,7 @@ namespace WordStats
                 {
                     using (StreamWriter file = new StreamWriter($"{filename}.stems.txt")) 
                     {
-                        foreach (var word in words_morfed) 
+                        foreach (var word in words_morfed_sorted) 
                         {
                             file.WriteLine($"{word.Key}  {word.Value}");
                         }
@@ -152,9 +153,9 @@ namespace WordStats
                     {
                         using (StreamWriter file = new StreamWriter($"{filename}.stems.txt"))
                         {
-                            foreach (var word in words_filtered)
+                            foreach (var word in words_morfed_sorted)
                             {
-                                file.WriteLine(morfer.Stemify(word));
+                                file.WriteLine($"{word.Key}  {word.Value}");
                             }
                         }
                     }
