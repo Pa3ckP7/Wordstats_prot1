@@ -50,12 +50,12 @@ namespace WordStats
                 else
                 {
                     Console.WriteLine($"Datoteka {filename}.besede.txt že obstaja želite prepisati to datoteko (y/n) (privzeto y)");
-                    char ans = (char)Console.Read();
-                    if (ans == 'y' || ans == '\r')
+                    string ans = Console.ReadLine();
+                    if (ans.Equals("y") || ans.Equals(""))
                     {
                         File.WriteAllLines($"{filename}.besede.txt", towrite);
                     }
-                    else if (ans == 'n')
+                    else if (ans.Equals("n"))
                     {
                         Console.WriteLine("Izpis statistike brez shranjevanja seznama besed");
                     }
@@ -119,12 +119,13 @@ namespace WordStats
                 else
                 {
                     Console.WriteLine($"Datoteka {filename}.besede.txt že obstaja želite prepisati to datoteko (y/n) (privzeto y)");
-                    char ans = (char)Console.Read();
-                    if (ans == 'y' || ans == '\r')
+                    Console.WriteLine();
+                    string ans = Console.ReadLine();
+                    if (ans.Equals("y") || ans.Equals(""))
                     {
                         File.WriteAllLines($"{filename}.besede.txt", towrite);
                     }
-                    else if (ans == 'n')
+                    else if (ans.Equals("n"))
                     {
                         Console.WriteLine("Izpis statistike brez shranjevanja seznama besed");
                     }
@@ -146,8 +147,8 @@ namespace WordStats
                 else
                 {
                     Console.WriteLine($"Datoteka {filename}.stems.txt že obstaja želite prepisati to datoteko (y/n) (privzeto y)");
-                    char ans = (char)Console.Read();
-                    if (ans == 'y' || ans == '\r')
+                    string ans = Console.ReadLine().ToLower().Trim();
+                    if (ans.Equals("y") || ans.Equals(""))
                     {
                         using (StreamWriter file = new StreamWriter($"{filename}.stems.txt"))
                         {
@@ -157,7 +158,7 @@ namespace WordStats
                             }
                         }
                     }
-                    else if (ans == 'n')
+                    else if (ans.Equals("n"))
                     {
                         Console.WriteLine("Izpis statistike brez shranjevanja novega teksta");
                     }
@@ -191,7 +192,7 @@ namespace WordStats
             {
                 while (!srws.EndOfStream) 
                 {
-                    string line = srws.ReadLine().ToLower();
+                    string line = srws.ReadLine().ToLower().Trim();
                     string[] wordstoadd=Regex.Replace(line, "[^a-zA-Z čšžČŠŽ]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (string word in wordstoadd) 
                     {
@@ -216,13 +217,13 @@ namespace WordStats
             using (var frws = File.OpenRead(location))
             using (var srws = new StreamReader(frws))
             {
-                if (!File.Exists($"{filename}.stems.txt"))
+                if (!File.Exists($"{filename}.stems.besedilo.txt"))
                 {                    
                     using (StreamWriter file = new StreamWriter($"{filename}.stems.besedilo.txt"))
                     {
                         while (!srws.EndOfStream)
                         {                          
-                            string line = srws.ReadLine().ToLower();
+                            string line = srws.ReadLine().ToLower().Trim();
                             string line_morfed = morfer.Stemify(line);
                             file.WriteLine(line_morfed);                            
                             string[] wordstoadd = Regex.Replace(line, "[^a-zA-Z čšžČŠŽ]", "").Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -243,9 +244,9 @@ namespace WordStats
                 }
                 else 
                 {
-                    Console.WriteLine($"Datoteka {filename}.stems.txt že obstaja želite prepisati to datoteko (y/n) (privzeto y)");
-                    char ans = (char)Console.Read();
-                    if (ans == 'y' || ans == '\r')
+                    Console.WriteLine($"Datoteka {filename}.stems.besedilo.txt že obstaja želite prepisati to datoteko (y/n) (privzeto y)");
+                    string ans = Console.ReadLine().ToLower().Trim();
+                    if (ans.Equals("y") || ans.Equals(""))
                     {
                         using (StreamWriter file = new StreamWriter($"{filename}.stems.besedilo.txt"))
                         {
